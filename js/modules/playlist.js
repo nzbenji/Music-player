@@ -1,11 +1,13 @@
 import { songsList } from '../data/songs.js';
+import PlayInfo  from './play-info.js';
 
 const Playlist = ( _ => {
 
     let songs = songsList;
     let currentPlayingIndex = 0;
     let currentSong = new Audio(songs[currentPlayingIndex].url);
-    let isPlaying = false;
+
+    currentSong.currentTime = 305;
 
     //cache the DOM
     const playlistEl = document.querySelector(".playlist");
@@ -13,6 +15,11 @@ const Playlist = ( _ => {
     const init = () => {
         render();
         listeners();
+        //Goes into setState and changes state
+        PlayInfo.setState({
+            songsLength: songs.length,
+            isPlaying: !currentSong.paused
+        });
     }
 
     const updateAudioSrc = () => {
@@ -33,21 +40,47 @@ const Playlist = ( _ => {
             updateAudioSrc();
             togglePlayPause();
         }
+
+        PlayInfo.setState({
+            songsLength: songs.length,
+            isPlaying: !currentSong.paused
+        });
+    }
+
+    //Pass functionality from this module to the play-info module.
+    const flipState = () => {
+        togglePlayPause();
+        render();
+    }
+
+    const playNextSong = () => {
+        //If one more song is in qeuee, play next song
+        if (songs[currentPlayingIndex + 1]) {
+            currentPlayingIndex++;
+            updateAudioSrc();
+            togglePlayPause();
+            render();
+        }
+        
+
     }
 
     const listeners = () => {
         //get index of li tag  when user clicks on song
         playlistEl.addEventListener("click", (e) => {
             if(e.target && e.target.matches(".fa")) {
-                const listEl = event.target.parentNode.parentNode
+                const listEl = e.target.parentNode.parentNode
                 //converts HTML collection to array
                 const listElIndex = [...listEl.parentElement.children].indexOf(listEl);
-                console.log(listElIndex);
                 mainPlay(listElIndex)
                 render();
             }
         });
         //change current index to index of li
+
+        currentSong.addEventListener("ended", () => {
+            playNextSong();
+        })
     }
 
     
@@ -88,7 +121,8 @@ const Playlist = ( _ => {
 
 
     return {
-        init
+        init,
+        flipState
     }
 
 }) ();
