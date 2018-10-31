@@ -1,5 +1,6 @@
 import { songsList } from '../data/songs.js';
 import PlayInfo  from './play-info.js';
+import TrackBar from './track-bar.js';
 
 const Playlist = ( _ => {
 
@@ -7,7 +8,7 @@ const Playlist = ( _ => {
     let currentPlayingIndex = 0;
     let currentSong = new Audio(songs[currentPlayingIndex].url);
 
-    currentSong.currentTime = 305;
+    //currentSong.currentTime = 305;
 
     //cache the DOM
     const playlistEl = document.querySelector(".playlist");
@@ -15,7 +16,6 @@ const Playlist = ( _ => {
     const init = () => {
         render();
         listeners();
-        //Goes into setState and changes state
         PlayInfo.setState({
             songsLength: songs.length,
             isPlaying: !currentSong.paused
@@ -32,14 +32,9 @@ const Playlist = ( _ => {
 
     const mainPlay = (clickedIndex) => {
         /* Toggle Play/Pause on same song or on a new song */
-        if(currentPlayingIndex === clickedIndex){
-            togglePlayPause();
-            console.log('same')
-        } else {
-            currentPlayingIndex = clickedIndex;
-            updateAudioSrc();
-            togglePlayPause();
-        }
+        currentPlayingIndex === clickedIndex
+            ? togglePlayPause()
+            : updateAudioSrc(), togglePlayPause();
 
         PlayInfo.setState({
             songsLength: songs.length,
@@ -61,8 +56,7 @@ const Playlist = ( _ => {
             togglePlayPause();
             render();
         }
-        
-
+    
     }
 
     const listeners = () => {
@@ -76,11 +70,14 @@ const Playlist = ( _ => {
                 render();
             }
         });
-        //change current index to index of li
+        
+        currentSong.addEventListener("timeupdate", () => {
+            TrackBar.setState(currentSong);
+        })
 
         currentSong.addEventListener("ended", () => {
             playNextSong();
-        })
+        });
     }
 
     
